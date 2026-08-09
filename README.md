@@ -10,6 +10,7 @@ skills/
   recon/               # answer one question from the codebase, read-only
   task-interview/      # interview the user to closure, then hand off
   write-prd/           # gathered material -> implementation-ready PRD
+  slice-work/          # approved PRD -> kanban of vertical slices
 ```
 
 Each skill is a directory containing a `SKILL.md` with YAML frontmatter
@@ -25,6 +26,8 @@ path:
 ```
 task-interview ──step 2──> recon        (per question, read-only)
                ──step 7──> write-prd    (once the frontier closes)
+write-prd      ──on approval──> slice-work   (only when asked to plan work)
+slice-work     ──step 4──> recon        (to size a slice against real code)
 ```
 
 A name lookup works regardless of how either skill was installed; a path like
@@ -33,13 +36,16 @@ without the other. So: **each skill directory is self-contained on disk, and
 composition happens at runtime.**
 
 Callers degrade rather than fail when a companion is missing —
-`task-interview` searches directly if `recon` is absent, and hands back raw
-material if `write-prd` is. Each caller says so at the point of invocation.
+`task-interview` searches directly if `recon` is absent, hands back raw
+material if `write-prd` is, and `slice-work` marks a slice `unverified` rather
+than guessing when `recon` is. Each caller says so at the point of invocation.
 
 Skills that pass data define a contract at the boundary and state it in their own
 SKILL.md, so neither side has to read the other. `recon` emits findings as
 `claim + path:line + confidence`; `task-interview` carries them through;
-`write-prd` enforces that an `inferred` finding is never written as fact.
+`write-prd` enforces that an `inferred` finding is never written as fact; and
+`slice-work` flags the tickets that rest on one, since those are the tickets
+most likely to change shape.
 
 Where two skills genuinely need the same knowledge, one owns it and the other
 keeps a deliberately minimal derived copy, labeled as derived with a pointer to
@@ -55,7 +61,7 @@ Skills are discovered from `~/.claude/skills/` (personal) or
 take effect immediately:
 
 ```bash
-for s in recon task-interview write-prd; do
+for s in recon task-interview write-prd slice-work; do
   ln -s "$PWD/skills/$s" ~/.claude/skills/$s
 done
 ```
