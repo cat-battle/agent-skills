@@ -17,6 +17,7 @@ Cheap checks, in order. Stop when the shape is clear.
 | `vendor/`, `third_party/`, checked-in `node_modules` | **Vendored** dependencies |
 | Generated markers: `*_pb2.py`, `*.g.dart`, `codegen/`, "DO NOT EDIT" headers | **Generated** code |
 | Dependency manifest naming internal packages you can't find locally | **Polyrepo** — the rest lives elsewhere |
+| `conanfile.py`/`conanfile.txt`/`conan.lock`, or a manifest resolving first-party names against a private registry | **Package-manager polyrepo** — own components consumed as pinned packages |
 | `openapi.yaml`, `*.proto`, `schema.graphql`, an SDK/client package | **Service boundary** |
 | `git sparse-checkout list` returns paths | **Sparse checkout** — files exist upstream but not on disk |
 
@@ -72,6 +73,76 @@ legitimate and often the fastest path. Two rules:
   is a fact about a pinned version, not about the project.
 - **Never let it become a requirement.** How a dependency behaves is a constraint
   to design around, not something the project decided.
+
+### Package-manager polyrepo
+
+First-party components consumed as **versioned packages from an artifact
+registry** rather than as source: Conan against Artifactory, a private npm or
+PyPI index, internal Go modules, Maven. Structurally a polyrepo, with two
+differences that change the search:
+
+- The dependency is **partially local**. What installs is an interface plus a
+  built artifact — headers, type stubs, a compiled library. The implementation
+  usually is not there.
+- The version is **pinned**, so the other repo's default branch is not the code
+  this project builds against. Reading it is reading a different program.
+
+So `absent` is almost never right here, and an uncorroborated read of another
+repo's `main` is never `confirmed`.
+
+#### Resolution ladder
+
+Climb only as far as the question needs. Most end at rung 1 or 2.
+
+| | Source | Verdict it supports |
+| --- | --- | --- |
+| 1 | Installed **headers / type stubs** in the local package cache | `confirmed` about the interface — this is the contract artifact |
+| 2 | The cached **recipe or manifest** (`conandata.yml`, `conanfile.py`, lockfile) | `confirmed` about version, options, and the source commit |
+| 3 | **Remote host** (Bitbucket/GitHub MCP or API) read **at the commit from rung 2** | `confirmed`, cited with the ref, marked as a remote read |
+| 4 | Remote host read at a **branch or tag**, uncorroborated | `inferred` — say it is not provably the built code |
+| 5 | Nothing reachable | `external`, naming the command that would settle it |
+
+Rung 1 is the one that gets skipped. A signature, an enum's members, whether an
+API exists, what an option does — all settled `confirmed` from files already on
+disk, with no network call.
+
+A maintained local reference checkout of the component counts as rung 3 without
+the remote read, provided it is checked out at the rung-2 commit.
+
+#### Locating the local copy
+
+- Conan 2: `conan cache path <ref>`; `--folder` selects export, source, or build.
+- Conan 1: `~/.conan/data/<name>/<version>/<user>/<channel>/`.
+- Pinned versions: read `conan.lock` off disk rather than running `conan install`
+  or `conan graph info` — same answer, no network, no write.
+
+Cache and lockfile reads are inspection, like `git submodule status`. Installing,
+fetching sources, and cloning are not; recon names the command instead of running
+it.
+
+#### Corroborating a remote read
+
+Rung 3 rests entirely on the recipe's recorded commit and the fetched commit
+being the same one. If the recipes do not record source coordinates, rung 3 is
+unavailable and every remote read stays `inferred` — report that as a gap in the
+build, since no search tactic recovers it.
+
+#### Citing across components
+
+A bare path is ambiguous once more than one repo is in play. Carry the component
+and resolved version:
+
+```
+telemetry/1.4.2 (abc123f)  include/tracer.hpp:88  confirmed
+telemetry/1.4.2 (main)     src/tracer.cpp:210     inferred — not the built revision
+```
+
+Make rung 5 actionable rather than a dead end:
+
+```
+external — telemetry/1.4.2 source not local.
+Settles it: git clone --filter=blob:none <url> && git checkout abc123f
+```
 
 ### Generated code
 
