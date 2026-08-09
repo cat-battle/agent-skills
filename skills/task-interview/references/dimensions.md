@@ -85,5 +85,6 @@ And for *this session*: ship it, leave a PR, or just the PRD?
 
 ---
 
-Which of these are worth attempting from the repo before asking the user is
-covered in `recon.md`.
+Dimensions 8, 9, and 10 are the ones usually worth a `recon` invocation before
+asking the user. Dimensions 1, 2, 3, 11, and 12 are never in the code — intent,
+priority, audience, and risk tolerance only come from the user.

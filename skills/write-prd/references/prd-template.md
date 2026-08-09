@@ -77,10 +77,11 @@ deadlines, dependencies that may not be added.
 
 ## 8. Findings from the code
 
-What targeted recon established, with paths, plus anything a throwaway prototype
-proved. Kept separate from user statements so a misreading is visible and
-correctable rather than laundered into a requirement. Findings are evidence for
-requirements, never requirements themselves.
+What recon established, with paths and confidence labels, plus anything a
+throwaway prototype proved. Kept separate from user statements so a misreading is
+visible and correctable rather than laundered into a requirement. Findings are
+evidence for requirements, never requirements themselves — and an `inferred`
+finding is evidence that has not been confirmed.
 
 ## 9. Risks and open questions — required
 

@@ -44,6 +44,9 @@ the user wants that, they will ask.
 - **Traceability.** Every non-obvious statement is labeled with its source:
   `[user]`, `[assumed]`, `[code: path/to/file.py:42]`, or `[prototype]`. Nothing
   is unsourced, because an unsourced requirement is a guess wearing a suit.
+  Findings arriving from the `recon` skill keep their confidence label — an
+  `inferred` finding may not be stated as fact, and an `inferred` finding that a
+  requirement depends on belongs in §9 as something to confirm.
 - **Testability.** Every functional requirement is written so a reader can say
   whether a given implementation satisfies it. "Fast", "clean", and "intuitive"
   are not requirements — they are unfinished questions. Convert them into

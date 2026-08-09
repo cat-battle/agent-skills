@@ -46,9 +46,14 @@ The single exception is a throwaway prototype, under the conditions in
    dimension into an open question. Track them explicitly — an unwritten question
    gets dropped. Tag each with the PRD section it feeds, so gaps show up as empty
    sections rather than as questions you forgot to ask.
-2. **Recon, only if pertinent.** Follow `references/recon.md`. Close from the repo
-   whatever the repo can answer, before asking the user. Never ask what the code
-   already says.
+2. **Recon, only if pertinent.** For frontier questions plausibly answerable from
+   the repo, invoke the `recon` skill — one question per invocation, named
+   explicitly. Close what the repo can close before asking the user; never ask
+   what the code already says. Carry findings forward with their citations and
+   confidence labels intact. A finding marked `inferred` is not settled — it
+   stays on the frontier as a question to confirm with the user.
+   If `recon` isn't available, search directly but keep it question-scoped: name
+   the question first, a handful of searches, then escalate to the user.
 3. **Ask in rounds.** Use `AskUserQuestion` with the highest-leverage questions
    first — the ones whose answers change what the *other* questions should be.
    Offer concrete options with a recommended default so the user can click rather
@@ -148,4 +153,5 @@ reconstruct a source you dropped.
   Read at step 1.
 - `references/question-bank.md` — phrasings by task type, plus the follow-up
   ladders that drive step 4. Read when drafting and again when expanding.
-- `references/recon.md` — the bounded-search protocol. Read at step 2.
+
+Companion skills, invoked by name: `recon` at step 2, `write-prd` at step 7.
