@@ -5,18 +5,23 @@ Various agent-skills that I have developed for my own needs.
 ## Layout
 
 ```
-skills/
-  _template/           # copy this to start a new skill
+skills/                # everything here installs; nothing else belongs here
   recon/               # answer one question from the codebase, read-only
   task-interview/      # interview the user to closure, then hand off
   write-prd/           # gathered material -> implementation-ready PRD
   slice-work/          # approved PRD -> kanban of vertical slices
+template/              # copy this to start a new skill — deliberately outside skills/
 ```
 
 Each skill is a directory containing a `SKILL.md` with YAML frontmatter
 (`name`, `description`) followed by instructions for the agent. See
-[`skills/_template/README.md`](skills/_template/README.md) for the full
-anatomy and conventions.
+[`template/README.md`](template/README.md) for the full anatomy and
+conventions.
+
+`skills/` contains **only installable skills**. The template lives outside it
+because installation symlinks the whole directory — anything sitting in
+`skills/` becomes a live skill, and a template's placeholder `description` is
+routing noise the model has to read every session.
 
 ## How skills compose
 
@@ -56,26 +61,49 @@ test without loading the other skill.)
 
 ## Installing
 
-Skills are discovered from `~/.claude/skills/` (personal) or
-`<repo>/.claude/skills/` (project). Symlink rather than copy, so edits here
-take effect immediately:
+One symlink installs everything:
 
 ```bash
-for s in recon task-interview write-prd slice-work; do
-  ln -s "$PWD/skills/$s" ~/.claude/skills/$s
-done
+ln -s "$PWD/skills" ~/.claude/skills
 ```
 
-Install skills that call each other together; see *How skills compose* for how
-they degrade if you don't.
+Uninstall is the inverse, and removes nothing but the link:
 
-Verify with `/help` or by asking Claude to list available skills.
+```bash
+rm ~/.claude/skills
+```
+
+Claude Code discovers every subdirectory of `~/.claude/skills/` as a skill, so
+pointing that path at this repo installs the whole set at once and picks up new
+ones with no further linking. Edits here take effect in the next session,
+because the link resolves to the working tree rather than a copy.
+
+Two consequences worth knowing:
+
+- **Everything in `skills/` goes live.** That is why `template/` sits outside
+  it. A scratch or half-finished skill left in `skills/` is an installed skill.
+- **`~/.claude/skills/` cannot also hold unrelated skills** while it is a link
+  to this repo. If you need to mix sources, symlink individual skills instead:
+  `ln -s "$PWD/skills/recon" ~/.claude/skills/recon`.
+
+Per-project installs use `<repo>/.claude/skills/` and work the same way.
+
+Verify with `/skills`, or non-interactively:
+
+```bash
+claude -p "List the names of every skill available to you, one per line."
+```
+
+Skills that call each other should be installed together; see *How skills
+compose* for how they degrade if they aren't. The single symlink makes that
+automatic.
 
 ## Adding a skill
 
 ```bash
-cp -r skills/_template skills/my-skill
+cp -r template skills/my-skill
 ```
 
 Then edit `SKILL.md` — the `name` must match the directory, and the
-`description` is what the agent reads when deciding whether to load it.
+`description` is what the agent reads when deciding whether to load it. It
+installs on the next session with no linking step.
