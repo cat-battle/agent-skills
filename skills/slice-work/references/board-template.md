@@ -16,7 +16,15 @@ The target artifact. Read at step 1.
 | **Demo** | The observable check through the real entry point. Concrete enough to run: a command, a request, a click path, a message published. |
 | **Seams** | Which boundaries this crosses for real. Stubs named explicitly, each with the ticket that removes it. |
 | **Rests on** | Assumptions, `inferred` findings, or open questions this ticket depends on. Omit only when genuinely none. |
+| **Verified by** | `agent` — the demo is fully machine-checkable. `human: <what they judge>` — needs a person, named now so they are queued rather than surprised. `both` — split the demo and say which half is which. |
 | **Size** | `fits` — passes the no-"and" test. `unverified` — depends on code not yet checked. `indivisible` — admitted big, with why. |
+
+Route to a human only for what an agent genuinely cannot settle: how it looks,
+whether the wording is right, whether it is what the requester meant, or an action
+that is irreversible or outward-facing. A UI click path is machine-checkable; only
+the aesthetic judgment is not. The full taxonomy is owned by
+`verify-work/references/hitl-triggers.md` — this is the short form for planning
+time.
 
 Optional, when they carry information: owner, and a risk note for tickets ordered
 early *because* they are risky.
@@ -43,6 +51,7 @@ Order is by risk, not dependency. K-001 is the walking skeleton.
 - **Seams:** HTTP → handler → repository → real Postgres. Nothing stubbed. Runs
   in CI against a container.
 - **Rests on:** —
+- **Verified by:** agent
 - **Size:** fits
 
 ### K-002 — Reject widgets over the size limit
@@ -52,6 +61,8 @@ Order is by risk, not dependency. K-001 is the walking skeleton.
 - **Seams:** HTTP → handler, real. Limit read from real config.
 - **Rests on:** the 10 MB limit is `[assumed]` in PRD §10 — confirm before K-002
   is pulled
+- **Verified by:** both — status and body are agent-checkable; whether the message
+  reads as the user's problem rather than a crash is a human call
 - **Size:** fits
 
 ## Backlog

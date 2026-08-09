@@ -70,9 +70,12 @@ something to fix inside a ticket description.
 4. **Slice the rest along behavior, not layers.** Split by path, rule, data
    variation, interface, operation, or quality. `references/slicing-patterns.md`
    has the axes and a worked example; read it when a requirement resists.
-5. **Write each ticket's demo before its description.** If you cannot state the
-   observable check, the slice is not vertical yet, and no amount of description
-   will fix that.
+5. **Write each ticket's demo before its description**, and mark who can check it.
+   If you cannot state the observable check, the slice is not vertical yet, and no
+   amount of description will fix that. If the check needs a person — how it
+   looks, whether the wording is right, an irreversible action — say so in
+   **Verified by** now, so the human is queued rather than surprised at the end of
+   the slice.
 6. **Declare every stub.** A slice may stub a seam. It may not stub one silently —
    name the stub and the ticket that removes it.
 7. **Order by risk, not convenience.** Riskiest and least-understood first, since
@@ -96,6 +99,11 @@ Four mechanisms. They work together; the first is load-bearing.
 - **Contract tests where you genuinely cannot integrate.** A third-party API you
   don't control gets a contract test pinned to its documented shape, plus a named
   risk — not a mock that agrees with itself forever.
+
+The same argument applies to the human checks: a ticket needing a person's
+judgment says so when it is written, not when it is finished. `verify-work` runs
+these demos and routes what it cannot settle; a demo it has to reinterpret was
+underspecified here.
 
 ## Open questions are not slices
 
@@ -148,6 +156,7 @@ never guess in silence.
 `.claude/kanban/<slug>.md`, matching the PRD's slug where there is one. This is
 the **plan**: generated, reviewable in a diff, and unchanged by work happening.
 All tickets start in **Backlog** or **Ready** — this skill does not move cards.
+`verify-work` is what moves them, once a slice is built and checked.
 
 Exporting is always a **separate, explicit request**, never an unasked-for
 finishing touch. Two targets:

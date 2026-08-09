@@ -30,6 +30,7 @@ id: K-002
 status: ready           # backlog | ready | doing | review | done
 advances: [FR-2]
 size: fits              # fits | unverified | indivisible
+verified_by: both       # agent | human | both
 blocked_by: []          # ticket or spike ids
 unstubs: []             # stubs this ticket removes, by ticket id
 ---
@@ -43,7 +44,13 @@ unstubs: []             # stubs this ticket removes, by ticket id
 **Seams:** HTTP → handler, real. Limit read from real config.
 
 **Rests on:** the 10 MB limit is `[assumed]` in PRD §10 — confirm before pulling
+
+**Verified by:** both — status and body are agent-checkable; whether the message
+reads as the user's problem is a human call
 ```
+
+`verify-work` appends a `## Verification` section to this file and moves `status`
+when a ticket is checked. Nothing else writes to a ticket file after export.
 
 Spikes use the same shape with an `S-` id, plus `expires:` and a `question:`
 line in the body. A spike delivers a recommendation, not code.

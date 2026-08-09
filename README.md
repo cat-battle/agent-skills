@@ -10,6 +10,7 @@ skills/                # everything here installs; nothing else belongs here
   task-interview/      # interview the user to closure, then hand off
   write-prd/           # gathered material -> implementation-ready PRD
   slice-work/          # approved PRD -> kanban of vertical slices
+  verify-work/         # run a ticket's demo, route what needs a human
 template/              # copy this to start a new skill — deliberately outside skills/
 ```
 
@@ -33,6 +34,7 @@ task-interview ──step 2──> recon        (per question, read-only)
                ──step 7──> write-prd    (once the frontier closes)
 write-prd      ──on approval──> slice-work   (only when asked to plan work)
 slice-work     ──step 4──> recon        (to size a slice against real code)
+verify-work    ──after a slice is built──> reads that slice's ticket
 ```
 
 A name lookup works regardless of how either skill was installed; a path like
@@ -44,6 +46,11 @@ Callers degrade rather than fail when a companion is missing —
 `task-interview` searches directly if `recon` is absent, hands back raw
 material if `write-prd` is, and `slice-work` marks a slice `unverified` rather
 than guessing when `recon` is. Each caller says so at the point of invocation.
+
+`verify-work` composes through an artifact rather than a call: it reads the
+**Demo** that `slice-work` wrote on the ticket before the code existed, so the
+acceptance check is never derived from the implementation it is supposed to
+judge. Without a ticket it writes the demo from stated intent first, and says so.
 
 Skills that pass data define a contract at the boundary and state it in their own
 SKILL.md, so neither side has to read the other. `recon` emits findings as
@@ -57,7 +64,10 @@ keeps a deliberately minimal derived copy, labeled as derived with a pointer to
 the source of truth. (Example: the PRD section list, owned by
 `write-prd/references/prd-template.md`, mirrored as a bare checklist in
 `task-interview/references/dimensions.md` so the interview can run its closure
-test without loading the other skill.)
+test without loading the other skill. Likewise the human-check taxonomy, owned by
+`verify-work/references/hitl-triggers.md` and mirrored as four lines in
+`slice-work/references/board-template.md` so a ticket can be marked at planning
+time.)
 
 ## Installing
 
