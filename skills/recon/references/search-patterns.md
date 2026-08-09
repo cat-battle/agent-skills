@@ -23,6 +23,13 @@ widening.
    `git log -S<string>` finds the commit that introduced a line;
    `git log -p <file>` reads its evolution.
 
+**Docs are a lead, not a source.** `docs/`, a README's architecture section, and
+ADRs are often the fastest way to *aim* a search — they name the modules,
+boundaries, and vocabulary the project actually uses, which is exactly what you
+need when the question gives you nothing to grep for. Nothing executes them, so
+they rot silently. Follow the doc to the code and cite the code. A claim whose
+only support is prose is `inferred` at best, and names the doc it came from.
+
 ## Entry points by project type
 
 | Type | Start at |

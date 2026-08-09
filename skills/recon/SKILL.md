@@ -128,6 +128,14 @@ That second one is the trap. The code tells you what happens; it never tells you
 whether anyone wanted it to. Reading a behavior is not confirming a requirement,
 and a recon that blurs the two launders an accident into a spec.
 
+One qualification, on the first bullet only: a repo sometimes *records* a
+decision — an ADR, a design note, a commit message that explains itself. That is
+evidence about intent, and it is why git history is pertinent when the question
+is "why". It is never `confirmed`: decisions get superseded without anyone
+marking the old one, so a recorded rationale is `inferred`, cited, and dated.
+Escalate anyway when the stakes warrant it — but don't interrupt the user for a
+reason that is checked into the tree.
+
 ## References
 
 - `references/topology.md` — detecting the tree's shape, scoping rules per shape
