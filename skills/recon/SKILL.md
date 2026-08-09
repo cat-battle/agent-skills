@@ -1,6 +1,6 @@
 ---
 name: recon
-description: Answer one specific question about a codebase with the smallest search that settles it, and report findings as cited, confidence-labeled evidence. Bounded and read-only — it is not a codebase survey and does not build general understanding. Use when a named question is plausibly answerable from the repo, when another skill needs grounded facts before proceeding, or when the user says "find out how X works", "does this repo already do Y", "where does Z happen".
+description: Answer one specific question about a codebase with the smallest search that settles it, and report findings as cited, confidence-labeled evidence. Orients to the tree's shape first — monorepo, polyrepo, submodules, vendored, sparse — so "not found" is never confused with "not in this checkout". Bounded and read-only; it is not a codebase survey and does not build general understanding. Use when a named question is plausibly answerable from the code, when another skill needs grounded facts before proceeding, or when the user says "find out how X works", "does this repo already do Y", "where does Z happen".
 ---
 
 # Recon
@@ -32,21 +32,29 @@ phase, including ones under a no-implementation hard stop.
 
 ## Process
 
-1. **Sharpen the question.** State it so that evidence could settle it either
+1. **Orient.** Establish what kind of tree this is before searching it — single
+   repo, monorepo, submodules, vendored, sparse, or one node of a polyrepo. The
+   checks are in `references/topology.md` and cost a command or two. Skip this
+   only when a previous recon this session already established the shape.
+   **Do not assume the answer is in this checkout.** Deciding that up front is
+   what separates "not found" from "not here", and those are different answers.
+2. **Sharpen the question.** State it so that evidence could settle it either
    way. "How does auth work?" is a survey; "which middleware rejects an expired
    token, and what status does it return?" is a recon. If you can't sharpen it,
    the problem is the question — say so rather than searching hopefully.
-2. **Predict the answer's shape.** Before searching, say what would count as
+3. **Predict the answer's shape.** Before searching, say what would count as
    finding it: a function, a config key, a route, a test, an absence. This is
    what makes it possible to know you're done.
-3. **Pick entry points.** Start from names in the question, then the module that
-   owns them, then its callers. See `references/search-patterns.md` for tactics.
-4. **Search within pertinence** (table below). Read the narrowest thing that
+4. **Pick entry points.** Start from names in the question, then the module that
+   owns them, then its callers. Scope to the owning package, not the whole tree.
+   See `references/search-patterns.md` for tactics.
+5. **Search within pertinence** (table below). Read the narrowest thing that
    settles the question — a function body, not the file; a file, not the package.
-5. **Spend the budget, then stop.** Roughly a handful of targeted searches. If it
+6. **Spend the budget, then stop.** Roughly a handful of targeted searches. If it
    isn't converging, stop and escalate — an unconverged recon is a finding, not a
-   failure.
-6. **Report.** Use the output contract below. Cite everything.
+   failure. If the trail leaves the checkout, stop immediately; searching harder
+   locally cannot find code that isn't there.
+7. **Report.** Use the output contract below. Cite everything.
 
 ## Pertinence
 
@@ -55,10 +63,14 @@ You are looking for the answer to *the question*, not for general understanding.
 | Pertinent | Not pertinent |
 | --- | --- |
 | The symbol or module named in the question | Unrelated packages |
+| The **package that owns it** | Every package in the workspace |
 | Its direct callers and importers | The whole dependency graph |
+| Neighbors along **declared** dependency edges | Neighbors by proximity on disk |
 | Config, manifests, lockfiles bearing on it | Every config in the repo |
 | Tests covering the behavior in question | The full test suite |
 | The entry point for the affected path | Entry points generally |
+| The contract artifact at a service boundary | Every consumer of that service |
+| Dependency source, when the question is about the dependency | Dependency source as background |
 | Git history when the question is "why" | Git history as browsing |
 
 When tempted past this line, check whether a *new* question has appeared. If so,
@@ -71,24 +83,37 @@ dangerous.
 Report findings, not narration. Each finding carries three things:
 
 - **The claim** — one sentence.
-- **The citation** — `path/to/file.py:42`. Never a claim without one.
+- **The citation** — `path/to/file.py:42`, qualified by package or repo when the
+  tree has more than one. Never a claim without one.
 - **The confidence** — one of:
   - `confirmed` — read directly. The code says this.
   - `inferred` — deduced from surrounding evidence, not stated outright. Say what
     the inference rests on.
   - `absent` — searched and did not find it. Name where you looked, so the caller
     can tell a real absence from a shallow search.
+  - `external` — it exists, but not in this checkout: another repo, an
+    uninitialized submodule, outside the sparse cone. Name where it lives if
+    determinable, and what access would settle it.
+- **Third-party marker**, when the citation points into a dependency rather than
+  the project's own code: name the package and version. Library behavior is a
+  fact about a pinned version, not a decision the project made.
 
-Then a verdict on the question: **answered**, **partially answered** (with what's
-missing), or **not answerable from the repo** (with what to ask the user instead).
+Then a verdict: **answered**, **partially answered** (with what's missing), **not
+answerable from this checkout** (with which repo or artifact would answer it), or
+**not answerable from code** (with what to ask the user instead).
 
-`absent` and `not answerable` are first-class results. A recon that reports
-"couldn't find it, looked in these four places" is more useful than one that
-keeps digging until it finds something adjacent and presents it as the answer.
+`absent`, `external`, and both "not answerable" verdicts are first-class results.
+A recon reporting "couldn't find it, looked in these four places" is more useful
+than one that keeps digging until it finds something adjacent and presents it as
+the answer. And `absent` vs `external` is the distinction that matters most to a
+caller: one says the behavior doesn't exist, the other says you're looking in the
+wrong repo. Never collapse them.
 
 Callers that produce documents should carry findings through as
 `[code: path/to/file.py:42]`, preserving the confidence label — an `inferred`
-finding promoted to fact in a downstream document is a bug with a long fuse.
+finding promoted to fact in a downstream document is a bug with a long fuse. An
+`external` finding is usually also a dependency, and belongs wherever the caller
+tracks those, not only in its findings list.
 
 ## What the code cannot tell you
 
@@ -105,5 +130,8 @@ and a recon that blurs the two launders an accident into a spec.
 
 ## References
 
+- `references/topology.md` — detecting the tree's shape, scoping rules per shape
+  (monorepo, polyrepo, submodules, vendored, generated, sparse), and service
+  boundaries. Read at step 1.
 - `references/search-patterns.md` — entry points by project type, and search
-  tactics. Read at step 3 when the entry point isn't obvious.
+  tactics. Read at step 4 when the entry point isn't obvious.

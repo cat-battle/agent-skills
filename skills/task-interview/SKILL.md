@@ -51,7 +51,10 @@ The single exception is a throwaway prototype, under the conditions in
    explicitly. Close what the repo can close before asking the user; never ask
    what the code already says. Carry findings forward with their citations and
    confidence labels intact. A finding marked `inferred` is not settled — it
-   stays on the frontier as a question to confirm with the user.
+   stays on the frontier as a question to confirm with the user. One marked
+   `external` means the answer lives outside this checkout: route it to the
+   dependency pass at step 5, since it needs an owner and a fallback, not just a
+   citation.
    If `recon` isn't available, search directly but keep it question-scoped: name
    the question first, a handful of searches, then escalate to the user.
 3. **Ask in rounds.** Use `AskUserQuestion` with the highest-leverage questions
@@ -101,7 +104,9 @@ criterion is not.
 Probe all four classes; each maps to a row in PRD §6.
 
 - **Technical** — modules, packages, services, schemas, migrations, or APIs this
-  touches or is touched by. Which callers break? What has to ship first?
+  touches or is touched by. Which callers break? What has to ship first? In a
+  multi-repo or multi-package setup, name the repo or package that owns each —
+  "the auth service" is not an address.
 - **Data** — inputs required, their shape and source, and what must exist before
   the work can run at all.
 - **External** — other people's decisions, credentials, access, third-party

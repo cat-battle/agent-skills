@@ -1,6 +1,9 @@
 # Search patterns
 
-Tactics for step 3, when the entry point isn't obvious from the question.
+Tactics for step 4, when the entry point isn't obvious from the question.
+Assumes step 1 already established the tree's shape — see `topology.md`. In a
+multi-package tree, apply everything below **within the owning package** before
+widening.
 
 <!-- SCAFFOLD: seeded with the common cases. Grow this as real recons turn up
      patterns that saved a search. -->
@@ -40,14 +43,28 @@ tells you what the project actually considers correct.
 - You're reading whole files rather than specific functions.
 - The result set keeps growing instead of narrowing.
 - You've started reconstructing the architecture rather than answering.
+- You've drifted into packages with no declared edge to the one you started in.
+- Every trail ends at an import, a client, or a URL that leaves the tree.
 
-Any of these means: stop, restate the question, and either re-aim at a narrower
-target or escalate as `not answerable from the repo`.
+The last one is not a failed search — it is the answer. Report `external` and
+stop; no amount of local searching finds code that isn't checked out.
+
+Any of the others means: stop, restate the question, and either re-aim at a
+narrower target or escalate.
 
 ## Absence is a claim
 
 To report `absent` honestly, the search has to have been capable of finding the
-thing. Before concluding something doesn't exist, try at least two vocabularies
-for it — the domain word and the likely code word (`retry`/`backoff`,
-`auth`/`session`/`token`, `cache`/`memo`). Then name where you looked in the
-finding, so the caller can judge the search rather than take it on faith.
+thing. Three conditions:
+
+1. **You searched the right tree.** In a monorepo, the owning package and its
+   declared dependents. If the code could live in a repo you don't have, the
+   finding is `external`, not `absent`.
+2. **You tried at least two vocabularies** — the domain word and the likely code
+   word (`retry`/`backoff`, `auth`/`session`/`token`, `cache`/`memo`).
+3. **Nothing hid the files.** Sparse checkout, uninitialized submodules, and
+   ignore rules all make present code invisible to a search. Check before
+   claiming absence.
+
+Then name where you looked in the finding, so the caller can judge the search
+rather than take it on faith.

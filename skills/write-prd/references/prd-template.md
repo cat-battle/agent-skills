@@ -70,6 +70,10 @@ Four classes — technical, data, external, sequencing. For each: what it is,
 whether it exists today, who owns it, and the fallback if it's unavailable. An
 unowned dependency is a risk; move it to §9.
 
+Where the work spans repos or packages, address each dependency precisely — the
+repo or package that owns it, not just a service name. Recon findings marked
+`external` belong here, not only in §8.
+
 ## 7. Constraints
 
 Stack and version pins, conventions to follow, things that may not be touched,
