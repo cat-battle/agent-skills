@@ -127,7 +127,9 @@ One per ticket, stated plainly:
 - **verified pending human** — the agent-side checks passed; named human checks
   are outstanding. **This is not done.**
 - **failed** — a check failed. Report the invocation, the expected result, the
-  observed result, and nothing else. Diagnosis only if asked.
+  observed result, and nothing else. Diagnosis only if asked — and when asked,
+  hand off to `diagnose` rather than investigating here, so the failing evidence
+  stays a fixed record. Without it, say the cause is unexamined.
 - **unverifiable here** — the check cannot run in this environment. Name what
   blocks it and what would unblock it. Distinct from failed, and never collapsed
   into it.

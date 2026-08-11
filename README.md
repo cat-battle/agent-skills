@@ -11,6 +11,7 @@ skills/                # everything here installs; nothing else belongs here
   write-prd/           # gathered material -> implementation-ready PRD
   slice-work/          # approved PRD -> kanban of vertical slices
   verify-work/         # run a ticket's demo, route what needs a human
+  diagnose/            # symptom -> proven cause, by experiment; does not fix
 template/              # copy this to start a new skill — deliberately outside skills/
 ```
 
@@ -35,6 +36,9 @@ task-interview ──step 2──> recon        (per question, read-only)
 write-prd      ──on approval──> slice-work   (only when asked to plan work)
 slice-work     ──step 4──> recon        (to size a slice against real code)
 verify-work    ──after a slice is built──> reads that slice's ticket
+               ──on `failed`──> diagnose     (the cause is a separate question)
+diagnose       ──as needed──> recon      (static sub-questions, read-only)
+               ──on `works as designed`──> task-interview
 ```
 
 A name lookup works regardless of how either skill was installed; a path like
@@ -44,13 +48,23 @@ composition happens at runtime.**
 
 Callers degrade rather than fail when a companion is missing —
 `task-interview` searches directly if `recon` is absent, hands back raw
-material if `write-prd` is, and `slice-work` marks a slice `unverified` rather
-than guessing when `recon` is. Each caller says so at the point of invocation.
+material if `write-prd` is, `slice-work` marks a slice `unverified` rather
+than guessing when `recon` is, and `diagnose` searches directly when `recon` is,
+keeping the same confidence labels. Each caller says so at the point of
+invocation.
 
 `verify-work` composes through an artifact rather than a call: it reads the
 **Demo** that `slice-work` wrote on the ticket before the code existed, so the
 acceptance check is never derived from the implementation it is supposed to
 judge. Without a ticket it writes the demo from stated intent first, and says so.
+
+The `verify-work` → `diagnose` handoff exists because each skill keeps exactly one
+hard stop, and the stops are deliberately adjacent: `verify-work` establishes
+*that* something is broken and refuses to explain it; `diagnose` establishes *why*
+and refuses to fix it. Collapsing either pair would destroy the record — a
+verification that diagnoses stops being reproducible evidence, and a diagnosis
+that fixes can no longer say which change mattered. Both write findings only; the
+repair is always a separate, deliberate act.
 
 Skills that pass data define a contract at the boundary and state it in their own
 SKILL.md, so neither side has to read the other. `recon` emits findings as
